@@ -10,6 +10,8 @@ defmodule Sender do
   end
 
   def notify_all(emails) do
-    Enum.each(emails, &send_email/1)
+    Sender.EmailTaskSupervisor
+    |> Task.Supervisor.async_stream_nolink(emails, &send_email/1)
+    |> Enum.to_list()
   end
 end
