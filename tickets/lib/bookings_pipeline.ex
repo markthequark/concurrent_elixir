@@ -23,12 +23,18 @@ defmodule BookingsPipeline do
   end
 
   def handle_message(_processor, message, _context) do
-    # Add your business logic here...
-    IO.inspect(message, label: "Message")
+    %{data: %{event: event, user: user}} = message
+
+    if Tickets.tickets_available?(event) do
+      Tickets.create_ticket(user, event)
+      Tickets.send_email(user)
+      IO.inspect(message, label: "Message")
+    else
+      Broadway.Message.failed(message, "bookings-closed")
+    end
   end
 
   def prepare_messages(messages, _context) do
-    # Parse data and convert to a map.
     messages =
       Enum.map(messages, fn message ->
         Broadway.Message.update_data(message, fn data ->
@@ -39,12 +45,23 @@ defmodule BookingsPipeline do
 
     users = Tickets.users_by_ids(Enum.map(messages, & &1.data.user_id))
 
-    # Put users in messages.
     Enum.map(messages, fn message ->
       Broadway.Message.update_data(message, fn data ->
         user = Enum.find(users, & &1.id == data.user_id)
         Map.put(data, :user, user)
       end)
+    end)
+  end
+
+  def handle_failed(messages, _context) do
+    IO.inspect(messages, label: "Failed messages")
+
+    Enum.map(messages, fn
+      %{status: {:failed, "bookings-closed"}} = message ->
+        Broadway.Message.configure_ack(message, on_failure: :reject)
+
+      message ->
+        message
     end)
   end
 end
