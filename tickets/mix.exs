@@ -24,7 +24,8 @@ defmodule Tickets.MixProject do
     [
       {:lager, ">= 1.0.0"},
       {:broadway, "~> 1.0"},
-      {:broadway_rabbitmq, "~> 0.7"}
+      {:broadway_rabbitmq, "~> 0.7"},
+      {:amqp, ">= 1.0.0"}
     ]
   end
 end
