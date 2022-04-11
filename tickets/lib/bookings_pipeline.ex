@@ -57,7 +57,7 @@ defmodule BookingsPipeline do
 
     Enum.map(messages, fn message ->
       Broadway.Message.update_data(message, fn data ->
-        user = Enum.find(users, & &1.id == data.user_id)
+        user = Enum.find(users, &(&1.id == data.user_id))
         Map.put(data, :user, user)
       end)
     end)
@@ -77,14 +77,14 @@ defmodule BookingsPipeline do
 
   def handle_batch(_batcher, messages, batch_info, _context) do
     IO.puts("#{inspect(self())} Batch #{batch_info.batcher}
-      #{batch_info.batch_key}"))
+      #{batch_info.batch_key}")
 
-messages
-|> Tickets.insert_all_tickets()
-|> Enum.each(fn %{data: %{user: user}} ->
-                        Tickets.send_email(user)
-                                end)
+    messages
+    |> Tickets.insert_all_tickets()
+    |> Enum.each(fn %{data: %{user: user}} ->
+      Tickets.send_email(user)
+    end)
 
-                                messages
-                                end
+    messages
+  end
 end

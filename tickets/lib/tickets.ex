@@ -25,7 +25,7 @@ defmodule Tickets do
   def users_by_ids(ids) when is_list(ids) do
     # Normally this would be a database query,
     # selecting only users whose id belongs to `ids`.
-    Enum.filter(@users, & &1.id in ids)
+    Enum.filter(@users, &(&1.id in ids))
   end
 
   def insert_all_tickets(messages) do
@@ -34,4 +34,3 @@ defmodule Tickets do
     messages
   end
 end
-
